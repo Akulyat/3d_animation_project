@@ -154,8 +154,11 @@ public class QuadrupedProceduralMotion : MonoBehaviour
         // The ray information gives you where you hit and the normal of the terrain in that location.
         if (Physics.Raycast(raycastOrigin, -transform.up, out RaycastHit hit, Mathf.Infinity))
         {
-            if (hit.transform.gameObject.layer == LayerMask.NameToLayer("Ground"))
+            // bug, not a layer, but a tag
+            // if (hit.transform.gameObject.layer == LayerMask.NameToLayer("Ground"))
+            if (hit.transform.gameObject.tag == "Ground")
             {
+                Debug.Log("HTTING THE GROUND hit.distance: " + hit.distance);
                 posHit = hit.point;
                 distanceHit = hit.distance;
                 normalTerrain = hit.normal;
@@ -171,8 +174,32 @@ public class QuadrupedProceduralMotion : MonoBehaviour
 
         // START TODO ###################
 
-        // hips.position = ...
-        // hips.rotation = ...
+        // hips.position = Vector3.Lerp(hips.position, posHit, 1 - Mathf.Exp(-heightAcceleration * Time.deltaTime));
+        // hips.rotation = Quaternion.Lerp(hips.rotation, Quaternion.FromToRotation(hips.up, normalTerrain) * hips.rotation, 1 - Mathf.Exp(-heightAcceleration * Time.deltaTime));
+
+        // float offset = 1f;
+        // float heightAcceleration = 0.1f;
+        // float rotationAcceleration = 0.1f;
+        // hips.position = Vector3.Lerp(hips.position, posHit + normalTerrain * offset, 1 - Mathf.Exp(-heightAcceleration * Time.deltaTime));
+        // hips.rotation = Quaternion.Lerp(hips.rotation, Quaternion.FromToRotation(hips.up, normalTerrain) * hips.rotation, 1 - Mathf.Exp(-rotationAcceleration * Time.deltaTime));
+
+        // // hips.position = 
+        // // hips.rotation = 
+
+        // Adjust these values based on your character's size
+        float offset = 1.5f;
+        float heightAcceleration = 5f; // Increased from 0.1f
+        float rotationAcceleration = 5f; // Increased from 0.1f
+
+        // Add target position smoothing
+        Vector3 targetPosition = posHit + normalTerrain * offset;
+        hips.position = Vector3.Lerp(hips.position, targetPosition, 1 - Mathf.Exp(-heightAcceleration * Time.deltaTime));
+        
+        // Add more responsive rotation
+        Quaternion targetRotation = Quaternion.FromToRotation(transform.up, normalTerrain) * transform.rotation;
+        hips.rotation = Quaternion.Lerp(hips.rotation, targetRotation, 1 - Mathf.Exp(-rotationAcceleration * Time.deltaTime));
+
+
 
         // END TODO ###################
     }
@@ -233,10 +260,10 @@ public class QuadrupedProceduralMotion : MonoBehaviour
 
         // START TODO ###################
 
-        // goalWorldLookDir = ...
-        // goalLocalLookDir = ...
+        goalWorldLookDir = goal.position - headBone.position;
+        goalLocalLookDir = headBone.parent.InverseTransformDirection(goalWorldLookDir);
 
-        Quaternion targetLocalRotation = Quaternion.identity; // Change!
+        Quaternion targetLocalRotation = Quaternion.LookRotation(goalLocalLookDir);
 
         // END TODO ###################
 

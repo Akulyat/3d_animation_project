@@ -75,9 +75,11 @@ public class Animal : MonoBehaviour
         // Retrieve animal location in the heighmap
         int dx = (int)((tfm.position.x / terrainSize.x) * detailSize.x);
         int dy = (int)((tfm.position.z / terrainSize.y) * detailSize.y);
+        dx /= 100;
+        dy /= 100;
 
         // For each frame, we lose lossEnergy
-        energy -= lossEnergy;
+        energy -= lossEnergy / 10;
 
         // If the animal is located in the dimensions of the terrain and over a grass position (details[dy, dx] > 0), it eats it, gain energy and spawn an offspring.
         if ((dx >= 0) && dx < (details.GetLength(1)) && (dy >= 0) && (dy < details.GetLength(0)) && details[dy, dx] > 0)

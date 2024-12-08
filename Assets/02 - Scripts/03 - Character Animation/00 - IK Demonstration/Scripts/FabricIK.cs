@@ -60,6 +60,8 @@ public class FabricIK : MonoBehaviour
         // Initialize data.
         // We need to fill the arrays described above with the information for each bone.
         var current = this.transform;
+        Vector3 last_position = Vector3.zero;
+
         for (var i = bones.Length - 1; i >= 0; i--)
         {
 
@@ -71,10 +73,9 @@ public class FabricIK : MonoBehaviour
             // START TODO ###################
 
             // Just a placeholder. Change with the correct transform!
-            bones[i] = transform.parent;
 
-            // bones[i] = ...
-            // startingBoneRotation[i] = ...
+            bones[i] = current;
+            startingBoneRotation[i] = current.rotation;
 
             // END TODO ###################
 
@@ -96,15 +97,23 @@ public class FabricIK : MonoBehaviour
             {
                 // START TODO ###################
 
-                // bonesLength[i] = ...
-                // completeLength += ...
+
+                Debug.Log("current.position: " + current.position);
 
                 // END TODO ###################
 
                 startingBoneDirectionToNext[i] = bones[i + 1].position - current.position;
+
+                bonesLength[i] = startingBoneDirectionToNext[i].magnitude;
+                Debug.Log("bonesLength[i]: " + bonesLength[i]);
+
+                completeLength += bonesLength[i];
             }
             current = current.parent;
         }
+
+        Debug.Log("completeLength: " + completeLength);
+
     }
 
     // LateUpdate is called after all Update functions have been called.
@@ -158,9 +167,14 @@ public class FabricIK : MonoBehaviour
         // START TODO ###################
 
         // Change condition!
-        if (true)
+        Debug.Log("completeLength: " + completeLength);
+        Debug.Log("Vector3.Distance(bones[0].position, target.position): " + Vector3.Distance(bones[0].position, target.position));
+        if (completeLength < Vector3.Distance(bones[0].position, target.position))
         {
-            // bonesPositions[i] = ...
+            for (int i = 1; i < bonesPositions.Length; i++)
+            {
+                bonesPositions[i] = bones[i - 1].position + (target.position - bones[i - 1].position).normalized * bonesLength[i - 1];
+            }
         }
 
         // END TODO ###################
@@ -195,10 +209,12 @@ public class FabricIK : MonoBehaviour
 
                     // START TODO ###################
 
-                    // if...
-                    //     bonesPositions[i] = ...
-                    // else...
-                    //     bonesPositions[i] = ...
+                    if (i == bonesPositions.Length - 1)
+                        bonesPositions[i] = target.position;
+                    else {
+                        Vector3 dif = bonesPositions[i + 1] - bonesPositions[i];
+                        bonesPositions[i] = bonesPositions[i + 1] - dif.normalized * bonesLength[i];
+                    }
 
                     // END TODO ###################
                 }
@@ -212,14 +228,15 @@ public class FabricIK : MonoBehaviour
 
                     // START TODO ###################
 
-                    // bonesPositions[i] = ...
+                    Vector3 dif = bonesPositions[i - 1] - bonesPositions[i];
+                    bonesPositions[i] = bonesPositions[i - 1] - dif.normalized * bonesLength[i - 1];
 
                     // END TODO ###################
 
                 }
 
                 // Last check: Is the end-effector close enough to the target?
-                if ((bonesPositions[bonesPositions.Length - 1] - target.position).sqrMagnitude >= delta * delta)
+                if ((bonesPositions[bonesPositions.Length - 1] - target.position).sqrMagnitude <= delta * delta)
                 {
                     break;
                 }

@@ -85,10 +85,9 @@ public class FabricIKQuadruped : MonoBehaviour
             // START TODO ###################
 
             // Just a placeholder. Change with the correct transform!
-            bones[i] = transform.parent;
 
-            // bones[i] = ...
-            // startingBoneRotation[i] = ...
+            bones[i] = current;
+            startingBoneRotation[i] = current.rotation;
 
             // END TODO ###################
 
@@ -110,15 +109,17 @@ public class FabricIKQuadruped : MonoBehaviour
             {
                 // START TODO ###################
 
-                // bonesLength[i] = ...
-                // completeLength += ...
-
                 // END TODO ###################
 
                 startingBoneDirectionToNext[i] = bones[i + 1].position - current.position;
+
+                bonesLength[i] = startingBoneDirectionToNext[i].magnitude;
+                // Debug.Log("bonesLength[i]: " + bonesLength[i]);
+                completeLength += bonesLength[i];
             }
             current = current.parent;
         }
+        // Debug.Log("completeLength: " + completeLength);
     }
 
     // LateUpdate is called after all Update functions have been called.
@@ -176,9 +177,14 @@ public class FabricIKQuadruped : MonoBehaviour
         // START TODO ###################
 
         // Change condition!
-        if (true)
+        // Debug.Log("completeLength: " + completeLength);
+        // Debug.Log("Vector3.Distance(bones[0].position, target.position): " + Vector3.Distance(bones[0].position, target.position));
+        if (completeLength < Vector3.Distance(bones[0].position, target.position))
         {
-            // bonesPositions[i] = ...
+            for (int i = 1; i < bonesPositions.Length; i++)
+            {
+                bonesPositions[i] = bones[i - 1].position + (target.position - bones[i - 1].position).normalized * bonesLength[i - 1];
+            }
 
             // END TODO ###################
 
@@ -232,10 +238,12 @@ public class FabricIKQuadruped : MonoBehaviour
 
                     // START TODO ###################
 
-                    // if...
-                    //     bonesPositions[i] = ...
-                    // else...
-                    //     bonesPositions[i] = ...
+                    if (i == bonesPositions.Length - 1)
+                        bonesPositions[i] = target.position;
+                    else {
+                        Vector3 dif = bonesPositions[i + 1] - bonesPositions[i];
+                        bonesPositions[i] = bonesPositions[i + 1] - dif.normalized * bonesLength[i];
+                    }
 
                     // END TODO ###################
                 }
@@ -249,7 +257,8 @@ public class FabricIKQuadruped : MonoBehaviour
 
                     // START TODO ###################
 
-                    // bonesPositions[i] = ...
+                    Vector3 dif = bonesPositions[i - 1] - bonesPositions[i];
+                    bonesPositions[i] = bonesPositions[i - 1] - dif.normalized * bonesLength[i - 1];
 
                     // END TODO ###################
 

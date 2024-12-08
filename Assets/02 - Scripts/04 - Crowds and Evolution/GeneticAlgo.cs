@@ -9,6 +9,7 @@ public class GeneticAlgo : MonoBehaviour
 
     [Header("Genetic Algorithm parameters")]
     public int popSize = 100;
+    public int popLimit = 200;
     public GameObject animalPrefab;
 
     [Header("Dynamic elements")]
@@ -48,7 +49,22 @@ public class GeneticAlgo : MonoBehaviour
         {
             animals.Add(makeAnimal());
         }
-        customTerrain.debug.text = "N° animals: " + animals.Count.ToString();
+        if (animals.Count > popLimit) {
+            List<int> indices = new List<int>();
+            for (int i = 0; i < animals.Count; i++)
+                indices.Add(i);
+            indices.Sort((a, b) => UnityEngine.Random.value.CompareTo(0.5f));
+            while (indices.Count > animals.Count - popLimit)
+                indices.RemoveAt(indices.Count - 1);
+
+            Debug.Log("APOCALYPSE: Removing " + (animals.Count - popLimit) + " animals.");
+
+            indices.Sort((a, b) => b.CompareTo(a));
+            foreach (int i in indices)
+                removeAnimal(animals[i].GetComponent<Animal>());
+        }
+
+        customTerrain.debug.text = "N animals: " + animals.Count.ToString();
 
         // Update grass elements/food resources.
         updateResources();
