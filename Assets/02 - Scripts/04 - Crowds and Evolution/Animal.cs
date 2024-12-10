@@ -17,6 +17,10 @@ public class Animal : MonoBehaviour
     [Header("Energy parameters")]
     public float maxEnergy = 10.0f;
     public float lossEnergy = 0.1f;
+
+    // Adding this parameter to make offspring birth more realistic
+    public float offspringBirthEnergy = 0.5f;
+
     public float gainEnergy = 10.0f;
     private float energy;
 
@@ -87,10 +91,17 @@ public class Animal : MonoBehaviour
             // Eat (remove) the grass and gain energy.
             details[dy, dx] = 0;
             energy += gainEnergy;
-            if (energy > maxEnergy)
-                energy = maxEnergy;
 
-            genetic_algo.addOffspring(this);
+            // Offspring is born only when animal reaches maximum energy
+            if (energy > maxEnergy) {
+
+                // Offspring birth reduces parent energy
+                energy -= offspringBirthEnergy;
+
+                genetic_algo.addOffspring(this);
+            }
+                
+
         }
 
         // If the energy is below 0, the animal dies.
@@ -98,6 +109,9 @@ public class Animal : MonoBehaviour
         {
             energy = 0.0f;
             genetic_algo.removeAnimal(this);
+
+            // Dead animal becomes grass
+            details[dy, dx] = 1;
         }
 
         // Update the color of the animal as a function of the energy that it contains.
