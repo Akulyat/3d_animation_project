@@ -13,6 +13,8 @@ public class Animal : MonoBehaviour
     public float swapStrength = 10.0f;
     public float mutateStrength = 0.5f;
     public float maxAngle = 10.0f;
+    // for the age factor - extra addition 
+    public float maxAge = 100.0f;
 
     [Header("Energy parameters")]
     public float maxEnergy = 10.0f;
@@ -23,6 +25,8 @@ public class Animal : MonoBehaviour
 
     public float gainEnergy = 10.0f;
     private float energy;
+    //For the age
+    private float age = 0.0f;
 
     [Header("Sensor - Vision")]
     public float maxVision = 20.0f;
@@ -65,6 +69,14 @@ public class Animal : MonoBehaviour
 
     void Update()
     {
+    // Aging factor is added as an extra way of animal's perfomance over time
+        age += Time.deltaTime;
+        if (age > maxAge)
+        {
+            energy = 0.0f;
+            genetic_algo.removeAnimal(this);
+        }
+        
         // In case something is not initialized...
         if (brain == null)
             brain = new SimpleNeuralNet(networkStruct);
